@@ -69,6 +69,50 @@ void writeScoreFile(){
 void readScoreBoard(){
 }
 
+// compares two cards, returns 1 if the first card is more powerfull then the second, returns 0 otherwise
+int compare(char cardOne[], char cardTwo[]){
+
+	int one = 0;
+	int two = 0;
+	
+	switch(cardOne[0]){
+		case 'A':
+			one = 14;
+		case 'K':
+			one = 13;
+		case 'Q':
+			one = 12;
+		case 'J':
+			one = 11;
+		case 'T':
+			one = 10;
+		default:
+			one = cardOne[0] - '0';
+	}
+			
+	switch(cardTwo[0]){
+		case 'A':
+			two = 14;
+		case 'K':
+			two = 13;
+		case 'Q':
+			two = 12;
+		case 'J':
+			two = 11;
+		case 'T':
+			two = 10;
+		default:
+			two = cardTwo[0] - '0';
+	}
+	printf("%d : %d : ", one, two);
+	if(one == two){
+		return cardOne[1] > cardTwo[1];
+	}else{
+		return one > two;
+	}
+	
+}
+
 int main(){
 	
 	while(1){
@@ -78,7 +122,6 @@ int main(){
 		scanf("%1s",&input);
 		//char *DECK[] = {"2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s", "Ts", "Js", "Qs", "Ks", "As", "2h", "3h", "4h", "5h", "6h", "7h", "8h", "9h", "Th", "Jh", "Qh", "Kh", "Ah", "2d", "3d", "4d", "5d", "6d", "7d", "8d", "9d", "Td", "Jd", "Qd", "Kd", "Ad", "2c", "3c", "4c", "5c", "6c", "7c", "8c", "9c", "Tc", "Jc", "Qc", "Kc", "Ac"};
 		char **DECK = createDeck();
-		
 		
 			if(input == '1'){
 			

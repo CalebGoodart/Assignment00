@@ -3,15 +3,49 @@
 #include <string.h>
 #include <stdbool.h>
 #include <dirent.h>
+#include <time.h>
 
+struct player{
+	char first_name[64]; 
+	char last_name[64];
+	char country[64];
+	char scores[64];
+	char cards[52][2];
+};
 
 void createPlayers(){
+
+	int numPlayers;
+	printf("How many players?: ");
+	scanf("%d",&numPlayers);
+	int numRounds;
+	printf("How many rounds to play before declaring winner?:");
+	scanf("%d", &numRounds);
+
 }
 
-void createDeck(){
+char** createDeck(){
+
+	char **deck = (char**)malloc(52 * sizeof(char) + 1);
+	char *og[] = {"2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s", "Ts", "Js", "Qs", "Ks", "As", "2h", "3h", "4h", "5h", "6h", "7h", "8h", "9h", "Th", "Jh", "Qh", "Kh", "Ah", "2d", "3d", "4d", "5d", "6d", "7d", "8d", "9d", "Td", "Jd", "Qd", "Kd", "Ad", "2c", "3c", "4c", "5c", "6c", "7c", "8c", "9c", "Tc", "Jc", "Qc", "Kc", "Ac"};
+	
+	for (int i = 0; i < 52; i++){
+		deck[i] = (char*)malloc(3 * sizeof(char));
+		deck[i] = og[i];
+	}
+	
+	return deck;
 }
 
-void shuffle(){
+void shuffle(char *deck[]){
+	
+	for(int i = 0; i < 52; i++){
+		int j = rand() % (52-i);
+		char *temp0 = deck[i];
+		deck[i] = deck[j];
+		deck[j] = temp0;
+	}
+	
 }
 
 void distribute(){
@@ -36,27 +70,52 @@ void readScoreBoard(){
 }
 
 int main(){
-	char DECK[52][2] = {"2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s", "Ts", "Js", "Qs", "Ks", "As", "2h", "3h", "4h", "5h", "6h", "7h", "8h", "9h", "Th", "Jh", "Qh", "Kh", "Ah", "2d", "3d", "4d", "5d", "6d", "7d", "8d", "9d", "Td", "Jd", "Qd", "Kd", "Ad", "2c", "3c", "4c", "5c", "6c", "7c", "8c", "9c", "Tc", "Jc", "Qc", "Kc", "Ac"};
 	
 	while(1){
-		printf("MENU:\n\t1. Enter player's information\n\t2. Play\n\t3. Exit\n");
+		printf("\nMENU:\n\t1. Enter player's information\n\t2. Play\n\t3. Exit\n");
 		char input;
+		int keepInfo = 0;
 		scanf("%1s",&input);
-		switch(input){
-			case '1' :
-				printf("one\n");
-				break;
-			case '2' :
-				printf("two\n");
-				break;
-			case '3' :
+		//char *DECK[] = {"2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s", "Ts", "Js", "Qs", "Ks", "As", "2h", "3h", "4h", "5h", "6h", "7h", "8h", "9h", "Th", "Jh", "Qh", "Kh", "Ah", "2d", "3d", "4d", "5d", "6d", "7d", "8d", "9d", "Td", "Jd", "Qd", "Kd", "Ad", "2c", "3c", "4c", "5c", "6c", "7c", "8c", "9c", "Tc", "Jc", "Qc", "Kc", "Ac"};
+		char **DECK = createDeck();
+		
+		
+			if(input == '1'){
+			
+			struct player *user = malloc(sizeof(struct player));
+			printf("Enter your first name\n");
+			scanf("%s",&user->first_name);
+			
+			printf("Enter your last name\n");
+			scanf("%s",&user->last_name);
+			
+			printf("Enter your country\n");
+			scanf("%s",&user->country);
+			
+			}else if(input == '2'){
+			
+				if(!keepInfo){
+					printf("Enter y to continue without recording information:\n");
+					scanf("%s", &input);
+						if(input != 'y'){
+							continue;
+						}else{
+							printf("continuing without recording info");
+						}
+						
+				}
+				
+				
+			}else if(input == '3'){
 				printf("Goodbye\n");
 				return 0;
-				break;
-			default: 
-				printf("not reconized\n");
+			}else{ 
+				printf("not recognized\n");
+			}
+			
+			free(DECK);
 		}
-	}
 	
+
 	return 0;
 }

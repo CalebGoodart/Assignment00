@@ -13,7 +13,7 @@ struct player {
     char *cards[52];
 };
 
-struct player* createPlayers(struct player user) {
+struct player *createPlayers(struct player user) {
 
     int numPlayers;
     printf("How many players?: ");
@@ -21,8 +21,18 @@ struct player* createPlayers(struct player user) {
     int numRounds;
     printf("How many rounds to play before declaring winner?: ");
     scanf("%d", &numRounds);
+    char compName[] = "computer0";
+    struct player allUsers[numPlayers];
+    allUsers[0] = user;
+    for(int i = 1; i < numPlayers; i++){
+    	compName[8] = '0' + i;
+       	strcpy(allUsers[i].first_name, compName);
+    }
     
-    printf("%s", user.first_name);
+    for(int i = 0; i < numPlayers; i++){
+	    printf("%s", allUsers[i].first_name);
+    }
+    
 
 }
 
@@ -148,7 +158,7 @@ int main() {
             scanf("%s", &country);
             
             strcpy(user.first_name,first);
-            
+            printf("here");
             keepInfo = 1;
             createPlayers(user);
 

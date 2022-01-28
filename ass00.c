@@ -9,30 +9,22 @@ struct player {
     char first_name[16];
     char last_name[16];
     char country[16];
-    int scores;
+    int *scores;
     char *cards[52];
 };
 
-struct player *createPlayers(struct player user) {
-
-    int numPlayers;
-    printf("How many players?: ");
-    scanf("%d", &numPlayers);
-    int numRounds;
-    printf("How many rounds to play before declaring winner?: ");
-    scanf("%d", &numRounds);
+struct player *createPlayers(struct player user, int numPlayers) {
+    
     char compName[] = "computer0";
-    struct player allUsers[numPlayers];
+    struct player *allUsers = malloc(numPlayers * sizeof(struct player));
     allUsers[0] = user;
-    for(int i = 1; i < numPlayers; i++){
-    	compName[8] = '0' + i;
-       	strcpy(allUsers[i].first_name, compName);
+    for (int i = 1; i < numPlayers; i++) {
+        compName[8] = '0' + i;
+        strcpy(allUsers[i].first_name, compName);
     }
-    
-    for(int i = 0; i < numPlayers; i++){
-	    printf("%s", allUsers[i].first_name);
-    }
-    
+
+    return allUsers;
+
 
 }
 
@@ -135,56 +127,74 @@ int main() {
         char input;
         int keepInfo = 0;
         char **DECK = createDeck();
+        struct player *AllPlayers = NULL;
 
         printf("\nMENU:\n\t1. Enter player's information\n\t2. Play\n\t3. Exit\n");
         scanf("%s", &input);
 
 
-        if (input == '1') {
+        if (input == '1' || input == '2') {
 
-			char first[16];
-			char last;
-			char country;
-			
             struct player user;
+            int arr[] = {1,4,8,4,3};
+            user.scores = arr;
             
-            printf("Enter your first name\n");
-            scanf("%s", &first);
+            printf("%d", user.scores[2]);
+            if (input == '1') {
+                char first[16];
+                char last[16];
+                char country[16];
 
-            printf("Enter your last name\n");
-            scanf("%s", &last);
 
-            printf("Enter your country\n");
-            scanf("%s", &country);
-            
-            strcpy(user.first_name,first);
-            printf("here");
-            keepInfo = 1;
-            createPlayers(user);
+                printf("Enter your first name\n");
+                scanf("%s", &first);
 
-        } else if (input == '2') {
+                printf("Enter your last name\n");
+                scanf("%s", &last);
 
-			if (!keepInfo){
+                printf("Enter your country\n");
+                scanf("%s", &country);
+
+                strcpy(user.first_name, first);
+                strcpy(user.last_name, last);
+                strcpy(user.country, country);
+                keepInfo = 1;
+
+            } else if (input == '2') {
+				
+				printf("Enter y to continue without recording information:\n");
+				scanf("%s", &input);
+				
+				if (input != 'y') {
+					continue;
+				} else {
+					printf("continuing without recording info");
+					struct player user;
+					strcpy(user.first_name, "guest");
+
+				}
+			}
+
+            int numPlayers;
+            printf("How many players?: ");
+            scanf("%d", &numPlayers);
 			
-	            printf("Enter y to continue without recording information:\n");
-    	        scanf("%s", &input);
-    	        if (input != 'y') {
-    	            continue;
-    	        } else {
-                	printf("continuing without recording info");
-                	struct player user;
-                	strcpy(user.first_name, "guest");
-                	createPlayers(user);
-            	}
-            }
+            AllPlayers = createPlayers(user, numPlayers);
+			
+			int numRounds;
+		    printf("How many rounds to play before declaring winner?: ");
+		    scanf("%d", &numRounds);
+			
+			
         } else if (input == '3') {
-        	free(DECK);
+            free(DECK);
+            free(AllPlayers);
             printf("Goodbye\n");
             return 0;
         } else {
             printf("not recognized\n");
         }
-        
+
     }
-    
+
 }

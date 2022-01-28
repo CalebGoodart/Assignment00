@@ -10,22 +10,38 @@ struct player {
     char last_name[16];
     char country[16];
     int *scores;
-    char *cards[52];
+    char **cards;
 };
 
-struct player *createPlayers(struct player user, int numPlayers) {
-    
-    char compName[] = "computer0";
-    struct player *allUsers = malloc(numPlayers * sizeof(struct player));
-    allUsers[0] = user;
-    for (int i = 1; i < numPlayers; i++) {
-        compName[8] = '0' + i;
-        strcpy(allUsers[i].first_name, compName);
+struct player *createPlayers(struct player user, int numPlayers,int numRounds) {
+
+    char compName[16];
+    strcpy(compName,"computer");
+    struct player *players = malloc(numPlayers * sizeof(struct player));
+    int cards = 52/numPlayers;
+
+    int arr[numRounds];
+    for ( int i = 0; i < numRounds; i++){
+    	arr[i] = 0;
     }
 
-    return allUsers;
+    for (int i = 0; i < numPlayers; i++) {
+        sprintf(players[i].first_name, "%s%d", compName, i);
+        players[i].scores = malloc(sizeof (arr));
+        players[i].scores = arr;
 
+        players[i].cards = malloc( cards * sizeof(char) + 1);
 
+        int max = 52 / numPlayers;
+        for(int j = 0; j < max; j++){
+            players[i].cards[j] = malloc(3 * sizeof(char));
+        }
+    }
+    strcpy(players[0].first_name, user.first_name);
+
+    printf("%s : %d\n", players[0].first_name, players[0].scores[2]);
+
+    return players;
 }
 
 char **createDeck() {
@@ -55,7 +71,17 @@ void shuffle(char *deck[]) {
 
 }
 
-void distribute() {
+void distribute(char **deck, struct player *players, int numPlayers) {
+	int cards = 52 / numPlayers;
+	int total = cards * numPlayers;
+    int index = 0;
+    for (int i = 0; i < cards; i++){
+        for(int j = 0; j < numPlayers; j++){
+            players[j].cards[i] = deck[index];
+            index++;
+        }
+
+    }
 }
 
 void whoWins() {
@@ -136,10 +162,7 @@ int main() {
         if (input == '1' || input == '2') {
 
             struct player user;
-            int arr[] = {1,4,8,4,3};
-            user.scores = arr;
-            
-            printf("%d", user.scores[2]);
+
             if (input == '1') {
                 char first[16];
                 char last[16];
@@ -161,10 +184,10 @@ int main() {
                 keepInfo = 1;
 
             } else if (input == '2') {
-				
+
 				printf("Enter y to continue without recording information:\n");
 				scanf("%s", &input);
-				
+
 				if (input != 'y') {
 					continue;
 				} else {
@@ -178,14 +201,14 @@ int main() {
             int numPlayers;
             printf("How many players?: ");
             scanf("%d", &numPlayers);
-			
-            AllPlayers = createPlayers(user, numPlayers);
-			
 			int numRounds;
 		    printf("How many rounds to play before declaring winner?: ");
 		    scanf("%d", &numRounds);
-			
-			
+            AllPlayers = createPlayers(user, numPlayers, numRounds);
+		    shuffle(DECK);
+		    distribute(DECK, AllPlayers, numPlayers);
+
+
         } else if (input == '3') {
             free(DECK);
             free(AllPlayers);

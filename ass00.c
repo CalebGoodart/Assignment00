@@ -13,34 +13,35 @@ struct player {
     char **cards;
 };
 
-struct player *createPlayers(struct player user, int numPlayers,int numRounds) {
+struct player *createPlayers(struct player user, int numPlayers, int numRounds) {
 
-    char compName[16];
-    strcpy(compName,"computer");
+
     struct player *players = malloc(numPlayers * sizeof(struct player));
-    int cards = 52/numPlayers;
+    int cards = 52 / numPlayers;
 
-    int arr[numRounds];
-    for ( int i = 0; i < numRounds; i++){
-    	arr[i] = 0;
-    }
 
     for (int i = 0; i < numPlayers; i++) {
+        char compName[16];
+        strcpy(compName, "computer");
         sprintf(players[i].first_name, "%s%d", compName, i);
-        players[i].scores = malloc(sizeof (arr));
-        players[i].scores = arr;
 
-        players[i].cards = malloc( cards * sizeof(char) + 1);
+
+        players[i].scores = (int *) malloc(numRounds * sizeof(int));
+        int arr[numRounds];
+        for (int j = 0; j < numRounds; j++) {
+            arr[j] = 0;
+            players[i].scores[j] = arr[j];
+        }
+
+        players[i].cards = (char **) malloc(cards * sizeof(char) + 1);
 
         int max = 52 / numPlayers;
-        for(int j = 0; j < max; j++){
+        for (int j = 0; j < max; j++) {
             players[i].cards[j] = malloc(3 * sizeof(char));
         }
     }
+
     strcpy(players[0].first_name, user.first_name);
-
-    printf("%s : %d\n", players[0].first_name, players[0].scores[2]);
-
     return players;
 }
 
@@ -57,6 +58,15 @@ char **createDeck() {
         deck[i] = og[i];
     }
 
+/*	printf("The created deck of card is as follows:\n[");
+	for(int i = 0; i < 52; i++){
+		if(i%13 == 0 && i != 0){
+			printf("\n");
+		}
+		printf("\'%s\', ", deck[i]);
+	}
+	printf("]\n");
+*/
     return deck;
 }
 
@@ -72,38 +82,20 @@ void shuffle(char *deck[]) {
 }
 
 void distribute(char **deck, struct player *players, int numPlayers) {
-	int cards = 52 / numPlayers;
-	int total = cards * numPlayers;
+    int cards = 52 / numPlayers;
+    int total = cards * numPlayers;
     int index = 0;
-    for (int i = 0; i < cards; i++){
-        for(int j = 0; j < numPlayers; j++){
+    for (int i = 0; i < cards; i++) {
+        for (int j = 0; j < numPlayers; j++) {
             players[j].cards[i] = deck[index];
             index++;
         }
-
     }
 }
 
-void whoWins() {
-}
-
-void writeTempFile() {
-}
-
-void readTempFile() {
-}
-
-void declareWinner() {
-}
-
-void writeScoreFile() {
-}
-
-void readScoreBoard() {
-}
 
 // compares two cards, returns 1 if the first card is more powerful then the second, returns 0 otherwise
-int compare(char cardOne[], char cardTwo[]) {
+int compareCards(char cardOne[], char cardTwo[]) {
 
     int one = 0;
     int two = 0;
@@ -137,13 +129,50 @@ int compare(char cardOne[], char cardTwo[]) {
         default:
             two = cardTwo[0] - '0';
     }
-    printf("%d : %d : ", one, two);
     if (one == two) {
         return cardOne[1] > cardTwo[1];
     } else {
         return one > two;
     }
+}
 
+void whoWins(struct player *players, int numPlayers, int round) {
+    int max = 52 / numPlayers;
+    int winner = 0;
+
+    for (int i = 0; i < max; i++) {
+        //printf("\nCard Index: %d\n", i);
+        winner = 0;
+        for (int j = 1; j < numPlayers; j++) {
+
+            //printf("%-16s | %2s : %2s | %16s\n",players[winner].first_name,players[winner].cards[i],players[j].cards[i], players[j].first_name);
+            if (!compareCards(players[winner].cards[i], players[j].cards[i])) {
+                winner = j;
+            }
+
+            //printf("Winner: %16s\n", players[winner].first_name);
+        }
+
+        int value = players[winner].scores[round];
+        value++;
+        players[winner].scores[round] = value;
+        //printf("Point to: %16s : %d\n", players[winner].first_name, players[winner].scores[round]);
+    }
+}
+
+void writeTempFile() {
+}
+
+void readTempFile() {
+}
+
+void declareWinner() {
+}
+
+void writeScoreFile() {
+}
+
+void readScoreBoard() {
 }
 
 int main() {
@@ -152,72 +181,107 @@ int main() {
 
         char input;
         int keepInfo = 0;
-        char **DECK = createDeck();
+        char **DECK = NULL;
         struct player *AllPlayers = NULL;
 
         printf("\nMENU:\n\t1. Enter player's information\n\t2. Play\n\t3. Exit\n");
         scanf("%s", &input);
-
+        //printf("%s", input);
 
         if (input == '1' || input == '2') {
 
             struct player user;
 
+            if (input == '2') {
+
+                char snd;
+                printf("Enter y to continue without recording information:\n");
+                scanf("%s", &snd);
+
+                if (snd != 'y') {
+                    keepInfo = 1;
+                } else {
+                    printf("continuing without recording info\n");
+                    strcpy(user.first_name, "guest");
+                }
+            }
+
             if (input == '1') {
+                keepInfo = 1;
+            }
+
+            if (keepInfo == 1) {
                 char first[16];
                 char last[16];
                 char country[16];
 
 
                 printf("Enter your first name\n");
-                scanf("%s", &first);
+                scanf("%16s", &first);
 
                 printf("Enter your last name\n");
-                scanf("%s", &last);
+                scanf("%16s", &last);
 
                 printf("Enter your country\n");
-                scanf("%s", &country);
+                scanf("%16s", &country);
 
                 strcpy(user.first_name, first);
                 strcpy(user.last_name, last);
                 strcpy(user.country, country);
-                keepInfo = 1;
-
-            } else if (input == '2') {
-
-				printf("Enter y to continue without recording information:\n");
-				scanf("%s", &input);
-
-				if (input != 'y') {
-					continue;
-				} else {
-					printf("continuing without recording info");
-					struct player user;
-					strcpy(user.first_name, "guest");
-
-				}
-			}
+            }
 
             int numPlayers;
-            printf("How many players?: ");
+            printf("How many players?: \n");
             scanf("%d", &numPlayers);
-			int numRounds;
-		    printf("How many rounds to play before declaring winner?: ");
-		    scanf("%d", &numRounds);
+            int numRounds;
+            printf("How many rounds to play before declaring winner?: \n");
+            scanf("%d", &numRounds);
+            char *display;
+            printf("Display Scores?: \n");
+            scanf("%s", &display);
+            DECK = createDeck();
             AllPlayers = createPlayers(user, numPlayers, numRounds);
-		    shuffle(DECK);
-		    distribute(DECK, AllPlayers, numPlayers);
 
+            int test = 52 / numPlayers;
 
-        } else if (input == '3') {
+            for (int round = 0; round < numRounds; round++) {
+
+                printf("ROUND %d\n", round);
+                shuffle(DECK);
+                distribute(DECK, AllPlayers, numPlayers);
+
+                // display players hand
+                for (int i = 0; i < numPlayers; i++) {
+                    printf("%16s: ", AllPlayers[i].first_name);
+                    for (int j = 0; j < test; j++) {
+                        printf("%s ", AllPlayers[i].cards[j]);
+                    }
+                    printf("\n");
+                }
+                whoWins(AllPlayers, numPlayers, round);
+                for (int i = 0; i < numPlayers; i++) {
+                    printf("%d ", AllPlayers[i].scores[round]);
+                }
+                printf("\n");
+
+                // display players scores per round
+                for (int i = 0; i < numPlayers; i++) {
+                    printf("%16s: ", AllPlayers[i].first_name);
+                    for (int j = 0; j < numRounds; j++) {
+                        printf("%d ", AllPlayers[i].scores[j]);
+                    }
+                    printf("\n");
+                }
+            }
+
             free(DECK);
             free(AllPlayers);
+
+        } else if (input == '3') {
             printf("Goodbye\n");
             return 0;
         } else {
             printf("not recognized\n");
         }
-
     }
-
 }

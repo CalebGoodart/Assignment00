@@ -72,6 +72,8 @@ struct player *createPlayers(struct player user, int numPlayers, int numRounds) 
 	}
 
 	strcpy(players[0].first_name, user.first_name);
+	strcpy(players[0].last_name, user.last_name);
+	strcpy(players[0].country, user.country);
 	return players;
 }
 
@@ -93,6 +95,7 @@ char **createDeck() {
 
 void shuffle(char *deck[]) {
 
+	srand(time(NULL));
 	for (int i = 0; i < 52; i++) {
 		int j = rand() % (52 - i);
 		char *temp0 = deck[i];
@@ -182,22 +185,77 @@ void whoWins(struct player *players, int numPlayers, int round) {
 	
 }
 
-void writeTempFile() {
+void writeTempFile(struct player *players, int numPlayers, int round) {
+
+	FILE *tempFile;
+	
+	tempFile = fopen("temp.txt", "a");
+	
+	
+	if (round == -1){
+		tempFile = fopen("temp.txt", "w");
+		for(int i = 0; i < numPlayers; i++){
+
+			fprintf(tempFile, "%15s", players[i].first_name);
+		}
+	}else{
+		for(int i = 0; i < numPlayers; i++){
+			fprintf(tempFile, "%15d", players[i].scores[round]);
+		}	
+	}
+	fprintf(tempFile, "\n");
+	fclose(tempFile);
 }
 
-void readTempFile() {
-}
+int *readTempFile(int numPlayers, int numRounds) {
 
-void declareWinner(struct player *players, int numPlayers, int numRounds) {
-	int totalScores[numPlayers];
+	FILE *tempFile;
+
+	tempFile = fopen("temp.txt", "r");
+	
+	char test[numPlayers][16];
+	int *scores = malloc(numPlayers * sizeof(int));
+	char temp;
 	
 	for(int i = 0; i < numPlayers; i++){
-		totalScores[i] = 0;
-		for (int j = 0; j < numRounds; j++){
-			totalScores[i] = totalScores[i] + players[i].scores[j];
-		}
+		scores[i] = 0;
 	}
 	
+	for(int i = 0; i < numPlayers; i++){
+	
+		fgets(test[i], 16, tempFile);
+	
+		int index = 0;
+		while(test[i][index] == ' '){
+			index++;
+		}
+		int num = 0;
+		for(index; index < 17; index++){
+			test[i][num] = test[i][index];
+			test[i][index] = '\0';
+			num++;
+		}
+		
+	}
+	
+	for(int round = 0; round < numRounds; round++){
+		char inpNum[16];
+		fgets(inpNum, 16, tempFile); //clear new line
+		for(int i = 0; i < numPlayers; i++){
+			fgets(inpNum, 16, tempFile);
+			scores[i] = scores[i] + atoi(inpNum);
+		}
+	
+	
+	}
+
+	fclose(tempFile);
+	return scores;
+}
+
+int declareWinner(struct player *players, int numPlayers, int numRounds) {
+	int *totalScores = readTempFile(numPlayers, numRounds);
+		
 	int winner = 0;
 	for(int i = 1; i < numPlayers; i++){
 		if(totalScores[winner] < totalScores[i]){
@@ -213,18 +271,37 @@ void declareWinner(struct player *players, int numPlayers, int numRounds) {
 	printf("]\n\n");
 	
 	printf("The Winner(s) is: %s", players[winner].first_name);
-	for(int i = 1; i < numPlayers; i++){
-		if(totalScores[winner] == totalScores[i]){
+	for(int i = 0; i < numPlayers; i++){
+		if(i != winner && totalScores[winner] == totalScores[i]){
 			printf(", %s", players[i].first_name);
 		}
 	}
 	printf("\n\n");
+	free(totalScores);
+	
+	return winner;
 }
 
-void writeScoreFile() {
+void writeScoreFile(struct player winner,int numPlayers, int numRounds) {
+	FILE *scoreboard;
+	if(!(scoreboard = fopen("scoreboard.txt","r"))){
+		scoreboard = fopen("scoreboard.txt","w");
+		fprintf(scoreboard,"%-16s%-16s%-16s%-8s%20s%20s\n","first_name","last_name","country","Score","Number of Players","Number of Rounds");
+		fclose(scoreboard);
+	}
+	scoreboard = fopen("scoreboard.txt","a");
+	int total = 0;
+	for(int i = 0; i < numRounds; i++){
+		total = total + winner.scores[i];
+	}
+	fprintf(scoreboard,"%-16s%-16s%-16s%-8d%20d%20d\n", winner.first_name, winner.last_name, winner.country, total, numPlayers, numRounds);
+	
+	fclose(scoreboard);
 }
 
 void readScoreBoard() {
+
+
 }
 
 int main() {
@@ -269,13 +346,13 @@ int main() {
 
 
 				printf("Enter your first name\n");
-				scanf("%16s", &first);
+				scanf("%15s", first);
 
 				printf("Enter your last name\n");
-				scanf("%16s", &last);
+				scanf("%15s", last);
 
 				printf("Enter your country\n");
-				scanf("%16s", &country);
+				scanf("%15s", country);
 
 				strcpy(user.first_name, first);
 				strcpy(user.last_name, last);
@@ -292,22 +369,30 @@ int main() {
 			
 			char display[4];
 			printf("Display Scores?: \n");
-			scanf("%s", &display);
+			scanf("%3s", display);
 			
 			DECK = createDeck();
 			AllPlayers = createPlayers(user, numPlayers, numRounds);
 
 			int numCards = 52 / numPlayers;
 
+			writeTempFile(AllPlayers,numPlayers,-1);
 			for (int round = 0; round < numRounds; round++) {
 
 				printf("ROUND %d\n\n", round);
 				shuffle(DECK);
 				distribute(DECK, AllPlayers, numPlayers);
 				whoWins(AllPlayers, numPlayers, round);
+				
+				writeTempFile(AllPlayers,numPlayers,round);
 			}
 
-			declareWinner(AllPlayers,numPlayers,numRounds);
+			int winner = declareWinner(AllPlayers,numPlayers,numRounds);
+			
+			if(winner == 0 && keepInfo) writeScoreFile(AllPlayers[winner],numPlayers,numRounds);
+			
+			
+			
 			free(DECK);
 			free(AllPlayers);
 

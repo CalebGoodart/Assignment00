@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
-#include <dirent.h>
 #include <time.h>
 
 struct player {
@@ -14,36 +12,36 @@ struct player {
 };
 
 void printDeck(char ** deck){
-	printf("[");
-	for(int i = 0; i < 52; i++){
-		if(i != 0 && i%13 == 0){
-			printf("\n");
-		}
-		printf("\'%s\'", deck[i]);
-		if(i != 51) printf(",");
-	}
-	printf("]\n\n");
+    printf("[");
+    for(int i = 0; i < 52; i++){
+        if(i != 0 && i%13 == 0){
+            printf("\n");
+        }
+        printf("\'%s\'", deck[i]);
+        if(i != 51) printf(",");
+    }
+    printf("]\n\n");
 }
 
 void printScores(struct player *players, int numPlayers, int round){
-	printf("The total score of each player is: [");
-	for (int i = 0; i < numPlayers; i++) {
-		printf("%d", players[i].scores[round]);
-		if(i != numPlayers-1) printf(",");
-	}
-	printf("]\n\n");
+    printf("The total score of each player is: [");
+    for (int i = 0; i < numPlayers; i++) {
+        printf("%d", players[i].scores[round]);
+        if(i != numPlayers-1) printf(",");
+    }
+    printf("]\n\n");
 }
 
 void printHands(struct player *players, int numPlayers, int numCards){
-	for (int i = 0; i < numPlayers; i++) {
-		printf("%s: [", players[i].first_name);
-			for (int j = 0; j < numCards; j++) {
-				printf("\'%s\' ", players[i].cards[j]);
-				if(j != numCards-1) printf(",");
-			}
-			printf("]\n");
-	}
-	printf("\n");
+    for (int i = 0; i < numPlayers; i++) {
+        printf("%s: [", players[i].first_name);
+        for (int j = 0; j < numCards; j++) {
+            printf("\'%s\' ", players[i].cards[j]);
+            if(j != numCards-1) printf(",");
+        }
+        printf("]\n");
+    }
+    printf("\n");
 }
 
 struct player *createPlayers(struct player user, int numPlayers, int numRounds) {
@@ -299,9 +297,61 @@ void writeScoreFile(struct player winner,int numPlayers, int numRounds) {
 	fclose(scoreboard);
 }
 
-void readScoreBoard() {
+void readScoreBoard(int numPlayers, int numRounds) {
 
+	char topPlayers[5][96] = { 0 };
+	FILE *scoreboard;
+	scoreboard = fopen("scoreboard.txt","r");
+	
+	char ColHeaders[96];
+	char trash[20];
+	fgets(ColHeaders, 96, scoreboard);
+	fgets(trash, 12, scoreboard);
+	int i = -1;
+	char tempFirst[16];
+	char tempLast[16];
+	char tempCountry[16];
+	char tempScore[8];
+	char tempNumPlayers[40];
+	char tempNumRounds[20];
+	char arr[96];
+	while(fgets(tempFirst, 16, scoreboard) != NULL){
+	
+	//fgets(ColHeaders, 96, scoreboard);
+	//printf("%s\n",ColHeaders);
+	//fgets(ColHeaders, 96, scoreboard);
+	
+	fgets(tempLast, 16, scoreboard);
+	fgets(tempCountry, 16, scoreboard);
+	fgets(tempScore, 8, scoreboard);
+	fgets(trash, 20, scoreboard);
+	fgets(tempNumPlayers, 20, scoreboard);
+	fgets(tempNumRounds, 20, scoreboard);
+	//printf("\n\n%s\n\n",tempNumPlayers);
+	int rounds = atoi(tempNumRounds);
+	int plrs = atoi(tempNumPlayers);
+	int scr = atoi(tempScore);
+	//printf("%-16s%-16s%-16s%-8s%20s%20s\n", tempFirst, tempLast, tempCountry, tempScore, tempNumPlayers, tempNumRounds);
+	if(plrs == numPlayers &&  rounds == numRounds){
+		
 
+		//printf("%s\n", arr);
+		if(i == -1){
+			printf("%s\n" ,ColHeaders);
+			i++;
+		}
+		
+		
+		printf("%-16s%-16s%-16s%-8d%20d%20d\n", tempFirst, tempLast, tempCountry, scr, plrs, rounds);
+		i++;
+		
+		if(i > 4) break;
+	}
+	
+	//printf("\nSSS%sEEE\n", trash);
+	}
+	
+	fclose(scoreboard);
 }
 
 int main() {
@@ -395,6 +445,7 @@ int main() {
 			
 			free(DECK);
 			free(AllPlayers);
+			readScoreBoard(numPlayers,numRounds);
 
 		} else if (input == '3') {
 			printf("Goodbye\n");
